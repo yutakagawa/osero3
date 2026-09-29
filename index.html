@@ -39,6 +39,11 @@
   .cell.hint::after{content:"";width:22%;height:22%;border-radius:50%;background:#ffe066aa}
   .cell.hint:hover{background:#3aa066}
   .cell.last{outline:2px solid #ffe066;outline-offset:-2px}
+  .cell.rock{background:radial-gradient(circle at 35% 30%,#8a8f8c,#4b504d 70%);box-shadow:inset 0 -3px 0 #0005}
+  .warp{position:absolute;top:2%;right:2%;width:34%;height:34%;border-radius:50%;z-index:2;
+    display:flex;align-items:center;justify-content:center;font-size:clamp(8px,1.8vw,12px);font-weight:800;
+    color:#fff;border:2px solid #fff8;pointer-events:none}
+  .w1{background:#8e44ad}.w2{background:#e67e22}.w3{background:#2980b9}
   .disc{position:absolute;inset:9%;border-radius:50%;box-shadow:0 2px 4px #0008;animation:pop .25s}
   .disc.flip{animation:flip .4s}
   @keyframes pop{from{transform:scale(.3)}to{transform:scale(1)}}
@@ -63,59 +68,61 @@
   <b>ルール：</b>黒 → 白 → 赤 の順番で置きます。自分の石と自分の石で、
   <b>他の2色の石</b>(色が混ざっていてもOK)を縦・横・斜めに挟むとすべて自分の色に変わります。
   置ける場所（黄色の点）がなければパス。全員が置けなくなったら終了、石が最も多い色の勝ちです。
+  <br><b>岩マス</b>(灰色)は置けず、裏返せず、挟むラインもそこで途切れます。
+  <b>ワープマス</b>(同じ記号A/Bの2マス)に置くと、普通の裏返しに加えて、相方のマスの周囲でも同じように挟んで裏返せます(相方に石を置く必要はなく、ワープの裏返しだけでも置けます)。
 </div>
 
 <script>
 // ---- 盤面定義: '.'=マス, ' '=穴, B/W/R=初期配置の石 (黒/白/赤) ----
 const BOARDS = {
   "十字": [
+    "   1...   ",
     "   ....   ",
     "   ....   ",
-    "   ....   ",
-    "..........",
+    "...X..X...",
     "....BWR...",
     "....RBW...",
-    "..........",
+    "...X..X...",
     "   ....   ",
     "   ....   ",
-    "   ....   ",
+    "   ...1   ",
   ],
   "ひし形": [
-    "     .     ",
+    "     1     ",
     "    ...    ",
     "   .....   ",
     "  .......  ",
-    " ......... ",
-    "....BWR....",
+    " ....X.... ",
+    "2...BWR...2",
     "....RBW....",
-    " ......... ",
+    " ....X.... ",
     "  .......  ",
     "   .....   ",
     "    ...    ",
-    "     .     ",
+    "     1     ",
   ],
   "ハート": [
-    " ...   ... ",
+    " 1..   ..1 ",
     "..... .....",
-    "...........",
+    ".....X.....",
     "....BWR....",
-    " ...RBW... ",
+    " 2..RBW..2 ",
     "  .......  ",
     "   .....   ",
     "    ...    ",
     "     .     ",
   ],
   "円形": [
-    "  ......  ",
+    "  1.....  ",
     " ........ ",
-    "..........",
-    "..........",
+    "2.........",
+    "....X.....",
     "...BWR....",
     "...RBW....",
-    "..........",
-    "..........",
+    ".....X....",
+    ".........2",
     " ........ ",
-    "  ......  ",
+    "  .....1  ",
   ],
   "三角形": [
     "    ..    ",
@@ -124,21 +131,21 @@ const BOARDS = {
     " .BWR.... ",
     " .RBW.... ",
     "..........",
+    "1...XX...1",
+  ],
+  "ドーナツ": [
+    "  1.....  ",
+    " ........ ",
     "..........",
+    "...BWR....",
+    "...RBW....",
+    "...2  2...",
+    "....  ....",
+    "....XX....",
+    " ........ ",
+    "  .....1  ",
   ],
 };
-BOARDS["ドーナツ"] = [
-  "  ......  ",
-  " ........ ",
-  "..........",
-  "...BWR....",
-  "...RBW....",
-  "....  ....",
-  "....  ....",
-  "..........",
-  " ........ ",
-  "  ......  ",
-];
 
 const PLAYERS = [
   {name:"黒", cls:"c0"},
@@ -148,26 +155,31 @@ const PLAYERS = [
 const DIRS = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
 const CPU_DELAY = 600;
 
-let H, W, cells, grid, turn, last, over, timer, ctrl = ["human","cpu","cpu"];
+let H, W, cells, grid, rock, warp, pairs, turn, last, over, timer, ctrl = ["human","cpu","cpu"];
 
 function parse(name){
   const rows = BOARDS[name];
   H = rows.length; W = Math.max(...rows.map(r=>r.length));
-  cells = []; grid = [];
+  cells = []; grid = []; rock = []; warp = []; pairs = {};
   for(let r=0;r<H;r++){
-    cells.push([]); grid.push([]);
+    cells.push([]); grid.push([]); rock.push([]); warp.push([]);
     for(let c=0;c<W;c++){
       const ch = rows[r][c] || " ";
       cells[r].push(ch !== " ");
+      rock[r].push(ch === "X");
       grid[r].push("BWR".indexOf(ch));   // -1 = 空き
+      const id = /[1-9]/.test(ch) ? +ch : 0;
+      warp[r].push(id);
+      if(id) (pairs[id] = pairs[id] || []).push([r,c]);
     }
   }
 }
-const inb = (r,c)=> r>=0&&r<H&&c>=0&&c<W&&cells[r][c];
+// 盤内のマス。岩は「壁」として扱い、置けず・裏返せず・線もそこで途切れる
+const inb = (r,c)=> r>=0&&r<H&&c>=0&&c<W&&cells[r][c]&&!rock[r][c];
+const partner = (r,c)=> pairs[warp[r][c]].find(([y,x])=>y!==r||x!==c);
 
-// 手 (r,c) を p が打った時に反転する座標一覧
-function flipsFor(g, r, c, p){
-  if(!inb(r,c) || g[r][c] !== -1) return [];
+// (r,c) を起点に p が挟める石の一覧 (起点が空きかどうかは問わない)
+function rays(g, r, c, p){
   const out = [];
   for(const [dr,dc] of DIRS){
     const line = [];
@@ -177,10 +189,18 @@ function flipsFor(g, r, c, p){
   }
   return out;
 }
+// 手 (r,c) を p が打った時に反転する座標一覧。ワープマスなら相方マスの周囲も含む
+function flipsFor(g, r, c, p){
+  if(!inb(r,c) || g[r][c] !== -1) return [];
+  let all = rays(g,r,c,p);
+  if(warp[r][c]){ const [pr,pc]=partner(r,c); all = all.concat(rays(g,pr,pc,p)); }
+  const seen = new Map(all.map(([y,x])=>[y+","+x,[y,x]]));
+  return [...seen.values()];
+}
 function movesFor(g, p){
   const ms = [];
   for(let r=0;r<H;r++) for(let c=0;c<W;c++){
-    if(!cells[r][c]) continue;
+    if(!inb(r,c)) continue;
     const f = flipsFor(g,r,c,p);
     if(f.length) ms.push({r,c,f});
   }
@@ -220,12 +240,18 @@ function render(flipped=[]){
     const b=document.createElement("button");
     b.className="cell";
     if(!cells[r][c]){ b.classList.add("hole"); b.disabled=true; $board.appendChild(b); continue; }
-    if(last && last[0]===r && last[1]===c) b.classList.add("last");
+    if(last && ((last[0]===r && last[1]===c) || (last[2] && last[2][0]===r && last[2][1]===c))) b.classList.add("last");
+    if(rock[r][c]){ b.classList.add("rock"); b.disabled=true; $board.appendChild(b); continue; }
     const v=grid[r][c];
     if(v>=0){
       const d=document.createElement("div");
       d.className="disc "+PLAYERS[v].cls+(fl.has(r+","+c)?" flip":"");
       b.appendChild(d);
+    }
+    if(warp[r][c]){
+      const m=document.createElement("span");
+      m.className="warp w"+warp[r][c]; m.textContent="ABC"[warp[r][c]-1];
+      b.appendChild(m);
     }
     if(hints.has(r+","+c)){ b.classList.add("hint"); b.onclick=()=>play(r,c); }
     else b.disabled = true;
@@ -273,7 +299,7 @@ function play(r,c){
   if(!f.length) return;
   grid[r][c]=turn;
   for(const [y,x] of f) grid[y][x]=turn;
-  last=[r,c];
+  last=[r,c, warp[r][c]?partner(r,c):null];
   const prev=turn;
   turn=(turn+1)%3;
   render(f);
