@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Podcast企画ボード</title>
+<meta name="theme-color" content="#0B5E94">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--ac:#0B5E94;--ac-soft:#DCEBF6;--ink:#16222B;--sub:#3F4E5A;--line:#8C9AA5;--bg:#E8F0F7;--col:#DDE3E7;--danger:#8A2B1F}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Zen Kaku Gothic New',system-ui,sans-serif}
+button{font-family:inherit;cursor:pointer}
+button:disabled{cursor:default}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.app{max-width:1440px;margin:0 auto;padding:32px 48px 56px;display:flex;flex-direction:column;gap:24px;min-height:100vh}
+@media (max-width:640px){.app{padding:16px 16px 40px}}
+.hero{background-image:linear-gradient(180deg,rgba(6,40,86,.15),rgba(6,40,86,.55)),url(wave.jpg);background-size:cover;background-position:center 88%;border-radius:16px;padding:56px 32px 28px;min-height:180px;color:#fff;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:20px}
+@media (max-width:640px){.hero{padding:40px 18px 18px}}
+.eyebrow{font-size:13px;font-weight:700;letter-spacing:.12em;color:#CFE8FA}
+h1{margin:0;font-size:36px;line-height:1.2;font-weight:700}
+@media (max-width:640px){h1{font-size:26px}}
+.stats{display:flex;gap:12px;flex-wrap:wrap}
+.stat{background:#fff;color:var(--ink);border-radius:10px;padding:6px 12px;min-width:64px}
+.stat .l{font-size:11px;color:#4A5A66}.stat .v{font-size:17px;font-weight:700}.stat .v small{font-size:12px;font-weight:500}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{min-height:44px;padding:0 18px;border-radius:8px;border:1px solid var(--ac);background:#fff;color:var(--ac);font-size:15px;font-weight:700}
+.btn.pri{background:var(--ac);color:#fff;border-color:var(--ac)}
+.btn.pill{border-radius:999px}
+.btn.gray{border-color:var(--line);color:var(--ink)}
+.btn.on{background:var(--ac);color:#fff}
+.btn.danger{border-color:var(--danger);color:var(--danger)}
+.btn.danger.armed{background:var(--danger);color:#fff}
+.btn.text{border:0;background:transparent}
+.btn.icon{width:44px;padding:0;display:inline-flex;align-items:center;justify-content:center}
+.btn:disabled{opacity:.35}
+.panel{background:#fff;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.panel.sel{border:2px solid var(--ac);padding:24px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field>label,.lbl{font-size:13px;font-weight:700}
+input[type=text],input[type=url],input[type=date],input[type=search],select,textarea{font:inherit;font-size:16px;min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);width:100%}
+select{padding:0 10px}
+textarea{padding:12px 14px;line-height:1.7;resize:vertical}
+.grid2{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.grow1{flex:1 1 200px}.grow2{flex:2 1 260px}
+.board{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;align-items:start}
+.col{background:var(--col);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px;min-height:120px}
+.col.over{outline:3px dashed var(--ac)}
+.col h2{margin:0;font-size:16px}
+.count{font-size:13px;font-weight:700;background:#fff;border-radius:999px;padding:2px 10px}
+.empty{font-size:13px;color:var(--sub);padding:18px 8px;text-align:center;border:1px dashed var(--line);border-radius:8px}
+.card{background:#fff;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px;border:2px solid transparent;cursor:grab}
+.card.cur{border-color:var(--ac)}
+.card h3{margin:0;font-size:16px;line-height:1.45}
+.tag{font-size:12px;font-weight:700;color:var(--ac);background:var(--ac-soft);border-radius:999px;padding:2px 10px}
+.small{font-size:13px;color:var(--sub)}
+.link{display:flex;align-items:center;gap:8px;background:#F3F5F7;border-radius:8px;padding:4px 4px 4px 14px}
+.link a{flex:1;min-width:0;font-size:14px;overflow-wrap:anywhere;color:var(--ac)}
+.box{background:#F3F5F7;border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cal .wd{font-size:12px;font-weight:700;color:var(--sub);text-align:center;padding:4px 0}
+.cal .day{min-height:84px;border-radius:8px;padding:6px;display:flex;flex-direction:column;gap:4px;background:#F3F5F7}
+.cal .day.today{background:var(--ac-soft)}
+.cal .day b{font-size:12px}
+.cal .ev{border:0;border-radius:6px;padding:4px 6px;background:var(--ac);color:#fff;font-size:11px;line-height:1.3;text-align:left;overflow-wrap:anywhere}
+.snip{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.8;background:#F3F5F7;border-radius:8px;padding:12px 14px}
+.hint{font-size:13px;color:var(--sub);margin:0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:8px;padding:10px 18px;font-size:14px;z-index:9}
+[hidden]{display:none!important}
+#manage:empty,#addform:empty,#detail:empty{display:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="hero" id="hdr"></header>
+  <div class="row" id="tabs"></div>
+  <div id="bar" class="row" style="justify-content:space-between;align-items:flex-end"></div>
+  <div id="manage"></div>
+  <div id="addform"></div>
+  <div id="detail"></div>
+  <main id="main"></main>
+  <p class="hint">カードは列へドラッグして動かせます(矢印ボタンでも移動できます)。データはこのブラウザに自動保存されます。「番組を管理」からバックアップの書き出し・読み込みができます。</p>
+</div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+<script>
+(function () {
+'use strict';
+
+/* ---------- 定数 ---------- */
+var KEY = 'podcast-planner-v1';
+var STAGES = ['アイデア', '企画中', '収録待ち', '編集中', '公開済み'];
+var KINDS = ['トーク', 'ゲスト', '特集', '告知'];
+var CHECKS = ['台本', '収録', '編集', 'ショーノート', 'アートワーク'];
+var GSTAT = ['未連絡', '依頼中', '承諾', '日程調整済み', '出演済み'];
+var LINKKINDS = ['X', 'Instagram', 'YouTube', 'Webサイト', 'Podcast', 'その他'];
+var PLATFORMS = ['Spotify', 'Apple Podcasts', 'YouTube', 'Amazon Music', 'stand.fm', 'Voicy', 'RSS', 'ホスティング管理画面', 'その他'];
+var TEMPLATES = {
+  'トーク': '【オープニング】あいさつ・今回のテーマ(1分)\n【本題1】\n【本題2】\n【雑談・リスナーからのお便り】\n【エンディング】まとめ・次回予告・告知',
+  'ゲスト': '【オープニング】あいさつ・ゲスト紹介(2分)\n【自己紹介】ゲストの経歴・活動\n【メインの質問1】\n【メインの質問2】\n【ゲストからの告知】\n【エンディング】お礼・次回予告',
+  '特集': '【オープニング】特集のテーマと背景(2分)\n【パート1】\n【パート2】\n【パート3】\n【まとめ】結論・持ち帰りポイント\n【エンディング】次回予告',
+  '告知': '【要点】伝えたい告知の内容(1文)\n【詳細】日時・場所・参加方法\n【呼びかけ】聞いてほしい人へのメッセージ\n【エンディング】'
+};
+var ICON_L = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>';
+var ICON_R = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+var ICON_TRASH = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
+var ICON_X = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+/* ---------- 状態 ---------- */
+function defaults() {
+  return {
+    shows: [{ id: 's1', name: '[番組名]', links: [] }],
+    curShow: 's1',
+    nextId: 5,
+    snippets: [
+      { id: 1, title: '出演依頼', body: '{ゲスト名}様\n\nはじめまして。[番組名]の[あなたの名前]と申します。\nぜひ{ゲスト名}様にゲスト出演いただきたく、ご連絡しました。\n\n【収録予定日】{収録日}\n【所要時間】[約○分]\n【収録方法】[オンライン / 対面]\n\nご検討のほど、よろしくお願いいたします。' },
+      { id: 2, title: '収録前のご案内', body: '{ゲスト名}様\n\n{収録日}の収録について、ご案内です。\n・収録URL / 場所:[ここに入力]\n・開始時間:[ここに入力]\n・事前にご用意いただくもの:[ヘッドホンなど]\n\n当日はどうぞよろしくお願いいたします。' }
+    ],
+    items: [
+      { id: 1, stage: 0, kind: 'トーク', title: '[企画タイトル例] 初回の自己紹介回', note: '番組のコンセプトと話したい軸', date: '', script: '', done: [] },
+      { id: 2, stage: 1, kind: 'ゲスト', title: '[企画タイトル例] ゲスト対談回', note: 'ゲスト候補への依頼文を用意', date: '', script: '', done: [] },
+      { id: 3, stage: 2, kind: 'トーク', title: '[企画タイトル例] 雑談回', note: '', date: '', script: '', done: [0] },
+      { id: 4, stage: 3, kind: '特集', title: '[企画タイトル例] 振り返り回', note: 'ノイズ除去とジングル挿入', date: '', script: '', done: [0, 1] }
+    ]
+  };
+}
+function load() {
+  var base = defaults();
+  try {
+    var d = JSON.parse(localStorage.getItem(KEY));
+    if (d && Array.isArray(d.items)) {
+      var shows = Array.isArray(d.shows) && d.shows.length ? d.shows : base.shows;
+      return {
+        shows: shows,
+        curShow: shows.some(function (s) { return s.id === d.curShow; }) ? d.curShow : shows[0].id,
+        nextId: d.nextId || 100,
+        snippets: Array.isArray(d.snippets) ? d.snippets : base.snippets,
+        items: d.items
+      };
+    }
+  } catch (e) {}
+  return base;
+}
+var S = load();
+var U = { view: 'board', q: '', selId: null, showAdd: false, showManage: false, snipEditId: null, delArmed: false, calY: new Date().getFullYear(), calM: new Date().getMonth() };
+var dragId = null;
+
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+/* ---------- ユーティリティ ---------- */
+function $(id) { return document.getElementById(id); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function safeUrl(u) {
+  var s = String(u || '').trim();
+  if (!s) return '';
+  if (!/^[a-z][a-z0-9+.-]*:/i.test(s)) s = 'https://' + s;
+  return /^https?:\/\//i.test(s) ? s : '';
+}
+function uid() { return Date.now() + Math.floor(Math.random() * 1000); }
+function curShow() { return S.shows.filter(function (s) { return s.id === S.curShow; })[0] || S.shows[0]; }
+function sidOf(x) { return x.showId || S.shows[0].id; }
+function items() { return S.items.filter(function (x) { return sidOf(x) === curShow().id; }); }
+function byId(id) { return S.items.filter(function (x) { return x.id === id; })[0]; }
+function hit(x) {
+  var q = U.q.trim().toLowerCase();
+  return !q || (x.title + ' ' + x.note + ' ' + (x.script || '') + ' ' + (x.guestName || '')).toLowerCase().indexOf(q) >= 0;
+}
+function fmtDate(d) {
+  if (!d) return '収録日未定';
+  var p = d.split('-'); return '収録 ' + Number(p[1]) + '/' + Number(p[2]);
+}
+function fillText(body, it) {
+  var dt = '[日程調整中]';
+  if (it && it.date) { var p = it.date.split('-'); dt = Number(p[1]) + '月' + Number(p[2]) + '日'; }
+  return body.split('{ゲスト名}').join(it && it.guestName ? it.guestName : '[ゲスト名]')
+    .split('{収録日}').join(dt)
+    .split('{タイトル}').join(it && it.title ? it.title : '[企画タイトル]');
+}
+function copyText(text, btn) {
+  function done() {
+    if (!btn) return;
+    var old = btn.textContent; btn.textContent = 'コピーしました';
+    setTimeout(function () { btn.textContent = old; }, 1500);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done, function () { fallback(); });
+  } else fallback();
+  function fallback() {
+    var t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select();
+    try { document.execCommand('copy'); done(); } catch (e) {}
+    document.body.removeChild(t);
+  }
+}
+function toast(msg) {
+  var t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t);
+  setTimeout(function () { t.remove(); }, 2200);
+}
+function opts(list, sel) { return list.map(function (v) { return '<option value="' + esc(v) + '"' + (v === sel ? ' selected' : '') + '>' + esc(v) + '</option>'; }).join(''); }
+function linkRows(list, act) {
+  if (!list.length) return '';
+  return list.map(function (l) {
+    return '<div class="link"><span class="tag" style="flex-shrink:0">' + esc(l.label) + '</span>' +
+      '<a href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer">' + esc(l.url) + '</a>' +
+      '<button type="button" class="btn gray" data-act="copy-' + act + '" data-id="' + l.id + '" data-url="' + esc(l.url) + '">コピー</button>' +
+      '<button type="button" class="btn text icon" style="color:var(--danger)" data-act="rm-' + act + '" data-id="' + l.id + '" aria-label="このリンクを削除">' + ICON_X + '</button></div>';
+  }).join('');
+}
+function linkForm(prefix, act, kinds) {
+  return '<div class="grid2">' +
+    '<div class="field" style="flex:0 1 190px"><label for="' + prefix + '-kind">' + (prefix === 'l' ? '種類' : '配信先') + '</label><select id="' + prefix + '-kind">' + opts(kinds) + '</select></div>' +
+    '<div class="field grow1" style="flex:1 1 240px"><label for="' + prefix + '-url">URL</label><input id="' + prefix + '-url" type="url" placeholder="https://"></div>' +
+    '<button type="button" class="btn pri" data-act="' + act + '">リンクを追加</button></div>';
+}
+
+/* ---------- 描画 ---------- */
+function renderHeader() {
+  var list = items();
+  var stock = list.filter(function (x) { return x.stage === 3; }).length;
+  var dates = list.filter(function (x) { return x.stage === 2 && x.date; }).map(function (x) { return x.date; }).sort();
+  var next = dates.length ? fmtDate(dates[0]).replace('収録 ', '') : '未定';
+  var note = stock === 0 ? '公開できる回がありません' : (stock >= 3 ? '余裕あり' : 'そろそろ収録を');
+  $('hdr').innerHTML =
+    '<div><div class="eyebrow">PODCAST PLANNING</div><h1>' + esc((curShow().name || '無題の番組') + ' 企画ボード') + '</h1></div>' +
+    '<div class="stats">' +
+    '<div class="stat"><div class="l">企画の総数</div><div class="v">' + list.length + '</div></div>' +
+    '<div class="stat"><div class="l">公開済み</div><div class="v">' + list.filter(function (x) { return x.stage === 4; }).length + '</div></div>' +
+    '<div class="stat"><div class="l">次の収録</div><div class="v">' + esc(next) + '</div></div>' +
+    '<div class="stat"><div class="l">ストック(収録済み・未公開)</div><div class="v">' + stock + '<small> 本</small></div><div class="l">' + note + '</div></div>' +
+    '</div>';
+  document.title = (curShow().name || '無題の番組') + ' - Podcast企画ボード';
+}
+function renderTabs() {
+  $('tabs').innerHTML = '<span class="lbl" style="margin-right:4px">番組</span>' +
+    S.shows.map(function (s) {
+      var n = S.items.filter(function (x) { return sidOf(x) === s.id; }).length;
+      var on = s.id === S.curShow;
+      return '<button type="button" class="btn pill' + (on ? ' on' : '') + '" data-act="show" data-id="' + esc(s.id) + '" aria-pressed="' + on + '">' + esc(s.name || '無題の番組') + ' <span style="font-weight:500">(' + n + ')</span></button>';
+    }).join('') +
+    '<button type="button" class="btn pill gray" data-act="toggle-manage" aria-expanded="' + U.showManage + '">' + (U.showManage ? '番組の管理を閉じる' : '番組を管理') + '</button>';
+}
+function renderBar() {
+  var views = [['board', 'ボード'], ['calendar', 'カレンダー'], ['snippets', '定型文']];
+  $('bar').innerHTML =
+    '<div class="field" style="flex:1 1 280px;max-width:420px"><label for="f-search">企画を検索</label><input id="f-search" type="search" placeholder="タイトル・メモ・台本から探す" value="' + esc(U.q) + '"></div>' +
+    '<div class="row">' + views.map(function (v) {
+      var on = U.view === v[0];
+      return '<button type="button" class="btn' + (on ? ' on' : '') + '" data-act="view" data-v="' + v[0] + '" aria-pressed="' + on + '">' + v[1] + '</button>';
+    }).join('') +
+    '<button type="button" class="btn pri" data-act="toggle-add" aria-expanded="' + U.showAdd + '">' + (U.showAdd ? '閉じる' : '＋ 企画を追加') + '</button></div>';
+}
+function renderManage() {
+  var el = $('manage');
+  if (!U.showManage) { el.innerHTML = ''; return; }
+  var sh = curShow();
+  el.innerHTML = '<section class="panel" aria-label="番組の管理">' +
+    '<div class="grid2">' +
+    '<div class="field grow1" style="flex:1 1 220px"><label for="s-rename">この番組の名前</label><input id="s-rename" type="text" value="' + esc(sh.name) + '"></div>' +
+    '<button type="button" class="btn danger' + (U.delArmed ? ' armed' : '') + '" data-act="del-show"' + (S.shows.length < 2 ? ' disabled' : '') + '>' + (U.delArmed ? 'もう一度押すと番組と企画を削除' : 'この番組を削除') + '</button>' +
+    '<div class="grid2" style="flex:2 1 320px"><div class="field grow1"><label for="s-new">新しい番組を追加</label><input id="s-new" type="text" placeholder="例:[別の番組名]"></div><button type="button" class="btn pri" data-act="add-show">番組を追加</button></div>' +
+    '</div>' +
+    '<div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--col);padding-top:14px">' +
+    '<div class="lbl">この番組の配信先(アップロード先)</div>' +
+    ((sh.links || []).length ? linkRows(sh.links, 'showlink') : '<div class="small">配信先はまだ登録されていません</div>') +
+    linkForm('sl', 'add-showlink', PLATFORMS) + '</div>' +
+    '<div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--col);padding-top:14px">' +
+    '<div class="lbl">バックアップ</div><div class="row">' +
+    '<button type="button" class="btn gray" data-act="export">データを書き出す</button>' +
+    '<button type="button" class="btn gray" data-act="import">データを読み込む</button></div>' +
+    '<p class="hint">書き出したファイル(JSON)を読み込むと、すべての番組・企画・定型文が置き換わります。別の端末への引っ越しにも使えます。</p></div>' +
+    '</section>';
+}
+function renderAdd() {
+  var el = $('addform');
+  if (!U.showAdd) { el.innerHTML = ''; return; }
+  el.innerHTML = '<form class="panel" id="addForm" style="flex-direction:row;flex-wrap:wrap;align-items:flex-end;gap:12px">' +
+    '<div class="field" style="flex:3 1 260px"><label for="f-title">企画タイトル</label><input id="f-title" type="text" placeholder="例:[エピソードのテーマ]"></div>' +
+    '<div class="field" style="flex:2 1 200px"><label for="f-guest">ゲスト・メモ(任意)</label><input id="f-guest" type="text" placeholder="例:ゲスト名、話したい論点"></div>' +
+    '<div class="field" style="flex:1 1 160px"><label for="f-date">収録予定日(任意)</label><input id="f-date" type="date"></div>' +
+    '<div class="field" style="flex:1 1 140px"><label for="f-kind">種別(台本テンプレ)</label><select id="f-kind">' + opts(KINDS) + '</select></div>' +
+    '<button type="submit" class="btn pri">企画を追加</button></form>';
+  var t = $('f-title'); if (t) t.focus();
+}
+function renderDetail() {
+  var el = $('detail');
+  var it = byId(U.selId);
+  if (!it || sidOf(it) !== curShow().id) { el.innerHTML = ''; return; }
+  var kind = it.kind || 'トーク';
+  var guest = '';
+  if (kind === 'ゲスト') {
+    guest = '<div class="box"><h3 style="margin:0;font-size:16px">ゲスト情報</h3>' +
+      '<div class="field"><label for="d-guest">ゲスト名</label><input id="d-guest" type="text" value="' + esc(it.guestName || '') + '" placeholder="例:[ゲストの名前]"></div>' +
+      '<div style="display:flex;flex-direction:column;gap:8px"><div class="lbl">出演の進み具合</div><div class="row">' +
+      GSTAT.map(function (g) { var on = (it.guestStatus || '未連絡') === g; return '<button type="button" class="btn pill' + (on ? ' on' : '') + '" data-act="gstat" data-v="' + g + '" aria-pressed="' + on + '">' + g + '</button>'; }).join('') + '</div></div>' +
+      '<div style="display:flex;flex-direction:column;gap:8px"><div class="lbl">SNS・リンク</div>' +
+      ((it.links || []).length ? linkRows(it.links, 'link') : '<div class="small">リンクはまだ登録されていません</div>') +
+      linkForm('l', 'add-link', LINKKINDS) + '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:8px"><div class="lbl">定型文をコピー(ゲスト名・収録日を自動で入れます)</div><div class="row">' +
+      S.snippets.map(function (s) { return '<button type="button" class="btn" data-act="gcopy" data-id="' + s.id + '">' + esc(s.title) + '</button>'; }).join('') + '</div></div></div>';
+  }
+  el.innerHTML = '<section class="panel sel" aria-label="企画の詳細">' +
+    '<div class="row" style="justify-content:space-between"><h2 style="margin:0;font-size:20px">企画の詳細</h2><button type="button" class="btn gray" data-act="close-detail">閉じる</button></div>' +
+    '<div class="grid2"><div class="field grow2"><label for="d-title">タイトル</label><input id="d-title" type="text" value="' + esc(it.title) + '"></div>' +
+    '<div class="field grow1" style="flex:1 1 180px"><label for="d-date">収録予定日</label><input id="d-date" type="date" value="' + esc(it.date || '') + '"></div></div>' +
+    '<div style="display:flex;flex-direction:column;gap:8px"><div class="lbl">種別</div><div class="row">' +
+    KINDS.map(function (k) { var on = kind === k; return '<button type="button" class="btn pill' + (on ? ' on' : '') + '" data-act="kind" data-v="' + k + '" aria-pressed="' + on + '">' + k + '</button>'; }).join('') + '</div></div>' +
+    '<div class="field"><label for="d-note">ゲスト・メモ</label><input id="d-note" type="text" value="' + esc(it.note || '') + '"></div>' +
+    '<div style="display:flex;flex-direction:column;gap:8px"><div class="lbl">この回の公開先リンク</div>' +
+    ((it.pubLinks || []).length ? linkRows(it.pubLinks, 'pub') : '<div class="small">公開後のURLをここに登録できます</div>') +
+    linkForm('pl', 'add-pub', PLATFORMS) + '</div>' +
+    guest +
+    '<div class="field"><div class="row" style="justify-content:space-between"><label for="d-script">台本・構成メモ</label><button type="button" class="btn" data-act="tpl">' + esc(kind) + '回のテンプレートを入れる</button></div>' +
+    '<textarea id="d-script" rows="6" placeholder="オープニング → 本題 → エンディング など">' + esc(it.script || '') + '</textarea></div>' +
+    '<div style="display:flex;flex-direction:column;gap:8px"><div class="lbl">公開までのチェック</div><div class="row">' +
+    CHECKS.map(function (c, i) { var on = (it.done || []).indexOf(i) >= 0; return '<button type="button" class="btn' + (on ? ' on' : '') + '" data-act="check" data-i="' + i + '" aria-pressed="' + on + '">' + (on ? '✓' : '○') + ' ' + c + '</button>'; }).join('') + '</div></div>' +
+    '</section>';
+}
+function cardHtml(x) {
+  var guestLine = x.guestName ? '<div style="font-size:13px;font-weight:500">ゲスト:' + esc(x.guestName) + ((x.links || []).length ? '(リンク' + x.links.length + ')' : '') + '</div>' : '';
+  var pub = (x.pubLinks || []).length ? '<div style="font-size:12px;font-weight:700">公開リンク ' + x.pubLinks.length + '件</div>' : '';
+  return '<article class="card' + (x.id === U.selId ? ' cur' : '') + '" draggable="true" data-id="' + x.id + '">' +
+    '<div class="row" style="justify-content:space-between"><span class="tag">' + esc(x.kind || 'トーク') + '</span><span class="small" style="font-size:12px">' + (x.done || []).length + '/' + CHECKS.length + '</span></div>' +
+    '<h3>' + esc(x.title) + '</h3>' + guestLine +
+    (x.note ? '<p class="small" style="margin:0;line-height:1.6">' + esc(x.note) + '</p>' : '') +
+    '<div style="font-size:13px;font-weight:500;color:var(--ac)">' + fmtDate(x.date) + '</div>' + pub +
+    '<div class="row" style="gap:6px;margin-top:4px">' +
+    '<button type="button" class="btn gray icon" data-act="move" data-id="' + x.id + '" data-d="-1"' + (x.stage === 0 ? ' disabled' : '') + ' aria-label="ひとつ前の段階へ戻す">' + ICON_L + '</button>' +
+    '<button type="button" class="btn pri icon" data-act="move" data-id="' + x.id + '" data-d="1"' + (x.stage === 4 ? ' disabled' : '') + ' aria-label="次の段階へ進める">' + ICON_R + '</button>' +
+    '<button type="button" class="btn" style="padding:0 14px;font-size:14px" data-act="open" data-id="' + x.id + '">詳細</button>' +
+    '<span style="flex:1"></span>' +
+    '<button type="button" class="btn text icon" style="color:var(--danger)" data-act="rm-ep" data-id="' + x.id + '" aria-label="この企画を削除">' + ICON_TRASH + '</button></div></article>';
+}
+function renderMain() {
+  var el = $('main');
+  var list = items().filter(hit);
+  if (U.view === 'board') {
+    el.innerHTML = '<div class="board">' + STAGES.map(function (name, i) {
+      var cards = list.filter(function (x) { return x.stage === i; });
+      return '<section class="col" data-stage="' + i + '"><div class="row" style="justify-content:space-between;padding:2px 4px"><h2>' + name + '</h2><span class="count">' + cards.length + '</span></div>' +
+        (cards.length ? cards.map(cardHtml).join('') : '<div class="empty">企画はまだありません</div>') + '</section>';
+    }).join('') + '</div>';
+  } else if (U.view === 'calendar') {
+    var y = U.calY, m = U.calM, lead = new Date(y, m, 1).getDay(), dim = new Date(y, m + 1, 0).getDate();
+    var now = new Date(), pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+    var today = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+    var cells = '';
+    for (var n = 0; n < lead; n++) cells += '<div></div>';
+    for (var d = 1; d <= dim; d++) {
+      var ds = y + '-' + pad(m + 1) + '-' + pad(d);
+      var evs = list.filter(function (x) { return x.date === ds; }).map(function (x) { return '<button type="button" class="ev" data-act="open" data-id="' + x.id + '">' + esc(x.title) + '</button>'; }).join('');
+      cells += '<div class="day' + (ds === today ? ' today' : '') + '"><b>' + d + '</b>' + evs + '</div>';
+    }
+    el.innerHTML = '<section class="panel" aria-label="収録カレンダー"><div class="row" style="justify-content:space-between">' +
+      '<button type="button" class="btn gray icon" data-act="cal" data-d="-1" aria-label="前の月">' + ICON_L + '</button>' +
+      '<h2 style="margin:0;font-size:20px">' + y + '年' + (m + 1) + '月</h2>' +
+      '<button type="button" class="btn gray icon" data-act="cal" data-d="1" aria-label="次の月">' + ICON_R + '</button></div>' +
+      '<div class="cal">' + ['日', '月', '火', '水', '木', '金', '土'].map(function (w) { return '<div class="wd">' + w + '</div>'; }).join('') + cells + '</div></section>';
+  } else {
+    var ed = S.snippets.filter(function (s) { return s.id === U.snipEditId; })[0];
+    el.innerHTML = '<section style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start">' +
+      '<form class="panel" id="snipForm" style="flex:1 1 320px"><h2 style="margin:0;font-size:18px">' + (ed ? '定型文を編集' : '定型文を追加') + '</h2>' +
+      '<div class="field"><label for="sn-title">名前</label><input id="sn-title" type="text" placeholder="例:出演依頼、お礼" value="' + esc(ed ? ed.title : '') + '"></div>' +
+      '<div class="field"><label for="sn-body">本文</label><textarea id="sn-body" rows="10" placeholder="よく使う文章を貼り付けます">' + esc(ed ? ed.body : '') + '</textarea></div>' +
+      '<p class="hint" style="line-height:1.7">本文に {ゲスト名}・{収録日}・{タイトル} と書くと、ゲスト企画の詳細からコピーするときに、その企画の内容へ自動で置き換わります。</p>' +
+      '<div class="row"><button type="submit" class="btn pri">' + (ed ? '変更を保存' : '定型文を追加') + '</button>' +
+      (ed ? '<button type="button" class="btn gray" data-act="snip-cancel">編集をやめる</button>' : '') + '</div></form>' +
+      '<div style="flex:2 1 400px;display:flex;flex-direction:column;gap:12px">' +
+      (S.snippets.length ? S.snippets.map(function (s) {
+        return '<article class="panel"><h3 style="margin:0;font-size:16px">' + esc(s.title) + '</h3><div class="snip">' + esc(s.body) + '</div>' +
+          '<div class="row"><button type="button" class="btn pri" data-act="snip-copy" data-id="' + s.id + '">そのままコピー</button>' +
+          '<button type="button" class="btn" data-act="snip-edit" data-id="' + s.id + '">編集</button>' +
+          '<button type="button" class="btn text" style="color:var(--danger)" data-act="snip-rm" data-id="' + s.id + '">削除</button></div></article>';
+      }).join('') : '<div class="empty">定型文はまだありません</div>') + '</div></section>';
+  }
+}
+function renderAll() { renderHeader(); renderTabs(); renderBar(); renderManage(); renderAdd(); renderDetail(); renderMain(); }
+
+/* ---------- 操作 ---------- */
+function patch(id, p) {
+  var it = byId(id); if (!it) return;
+  for (var k in p) it[k] = p[k];
+  save();
+}
+function numId(el) { return Number(el.getAttribute('data-id')); }
+function val(id) { var e = $(id); return e ? e.value : ''; }
+
+document.addEventListener('click', function (e) {
+  var el = e.target.closest('[data-act]');
+  if (!el) return;
+  var act = el.getAttribute('data-act'), id = numId(el), v = el.getAttribute('data-v');
+  var sel = byId(U.selId);
+  switch (act) {
+    case 'show': S.curShow = el.getAttribute('data-id'); U.selId = null; U.delArmed = false; U.q = ''; save(); renderAll(); break;
+    case 'toggle-manage': U.showManage = !U.showManage; U.delArmed = false; renderTabs(); renderManage(); break;
+    case 'toggle-add': U.showAdd = !U.showAdd; renderBar(); renderAdd(); break;
+    case 'view': U.view = v; renderBar(); renderMain(); break;
+    case 'cal': var dt = new Date(U.calY, U.calM + Number(el.getAttribute('data-d')), 1); U.calY = dt.getFullYear(); U.calM = dt.getMonth(); renderMain(); break;
+    case 'add-show':
+      var n = val('s-new').trim(); if (!n) { toast('番組名を入力してください'); break; }
+      var sid = 's' + uid(); S.shows.push({ id: sid, name: n, links: [] }); S.curShow = sid; U.selId = null; U.delArmed = false; save(); renderAll(); break;
+    case 'del-show':
+      if (S.shows.length < 2) break;
+      if (!U.delArmed) { U.delArmed = true; renderManage(); break; }
+      var gone = curShow().id;
+      S.items = S.items.filter(function (x) { return sidOf(x) !== gone; });
+      S.shows = S.shows.filter(function (s) { return s.id !== gone; });
+      S.curShow = S.shows[0].id; U.selId = null; U.delArmed = false; save(); renderAll(); break;
+    case 'add-showlink':
+      var u = safeUrl(val('sl-url')); if (!u) { toast('http または https のURLを入力してください'); break; }
+      var sh = curShow(); sh.links = (sh.links || []).concat([{ id: uid(), label: val('sl-kind') || 'その他', url: u }]); save(); renderManage(); break;
+    case 'rm-showlink': var s2 = curShow(); s2.links = (s2.links || []).filter(function (l) { return l.id !== id; }); save(); renderManage(); break;
+    case 'copy-showlink': case 'copy-link': case 'copy-pub': copyText(el.getAttribute('data-url'), el); break;
+    case 'export':
+      var blob = new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' });
+      var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = 'podcast-planner-' + new Date().toISOString().slice(0, 10) + '.json'; document.body.appendChild(a); a.click(); a.remove(); break;
+    case 'import': $('importFile').click(); break;
+    case 'open': U.selId = id; renderDetail(); renderMain(); var d0 = $('detail'); if (d0.scrollIntoView) d0.scrollIntoView({ behavior: 'smooth', block: 'start' }); break;
+    case 'close-detail': U.selId = null; renderDetail(); renderMain(); break;
+    case 'move':
+      var it = byId(id); if (!it) break;
+      it.stage = Math.max(0, Math.min(4, it.stage + Number(el.getAttribute('data-d')))); save(); renderHeader(); renderMain(); break;
+    case 'rm-ep':
+      S.items = S.items.filter(function (x) { return x.id !== id; }); if (U.selId === id) U.selId = null; save(); renderHeader(); renderTabs(); renderDetail(); renderMain(); break;
+    case 'kind': if (sel) { patch(sel.id, { kind: v }); renderDetail(); renderMain(); } break;
+    case 'check': if (sel) { var i = Number(el.getAttribute('data-i')); var dn = sel.done || []; patch(sel.id, { done: dn.indexOf(i) >= 0 ? dn.filter(function (n2) { return n2 !== i; }) : dn.concat([i]) }); renderDetail(); renderMain(); } break;
+    case 'gstat': if (sel) { patch(sel.id, { guestStatus: v }); renderDetail(); } break;
+    case 'tpl': if (sel) { var t = TEMPLATES[sel.kind || 'トーク'] || ''; patch(sel.id, { script: sel.script ? sel.script + '\n\n' + t : t }); renderDetail(); } break;
+    case 'add-link':
+      if (sel) { var lu = safeUrl(val('l-url')); if (!lu) { toast('http または https のURLを入力してください'); break; } patch(sel.id, { links: (sel.links || []).concat([{ id: uid(), label: val('l-kind') || 'その他', url: lu }]) }); renderDetail(); renderMain(); } break;
+    case 'rm-link': if (sel) { patch(sel.id, { links: (sel.links || []).filter(function (l) { return l.id !== id; }) }); renderDetail(); renderMain(); } break;
+    case 'add-pub':
+      if (sel) { var pu = safeUrl(val('pl-url')); if (!pu) { toast('http または https のURLを入力してください'); break; } patch(sel.id, { pubLinks: (sel.pubLinks || []).concat([{ id: uid(), label: val('pl-kind') || 'その他', url: pu }]) }); renderDetail(); renderMain(); } break;
+    case 'rm-pub': if (sel) { patch(sel.id, { pubLinks: (sel.pubLinks || []).filter(function (l) { return l.id !== id; }) }); renderDetail(); renderMain(); } break;
+    case 'gcopy': var sn = S.snippets.filter(function (s) { return s.id === id; })[0]; if (sn) copyText(fillText(sn.body, sel), el); break;
+    case 'snip-copy': var sc = S.snippets.filter(function (s) { return s.id === id; })[0]; if (sc) copyText(sc.body, el); break;
+    case 'snip-edit': U.snipEditId = id; renderMain(); break;
+    case 'snip-cancel': U.snipEditId = null; renderMain(); break;
+    case 'snip-rm': S.snippets = S.snippets.filter(function (s) { return s.id !== id; }); if (U.snipEditId === id) U.snipEditId = null; save(); renderMain(); renderDetail(); break;
+  }
+});
+
+document.addEventListener('submit', function (e) {
+  e.preventDefault();
+  if (e.target.id === 'addForm') {
+    var t = val('f-title').trim(); if (!t) { toast('企画タイトルを入力してください'); return; }
+    var kind = val('f-kind') || 'トーク';
+    S.items.push({ id: S.nextId, showId: curShow().id, stage: 0, kind: kind, title: t, note: val('f-guest').trim(), date: val('f-date'), script: TEMPLATES[kind] || '', done: [] });
+    S.nextId += 1; U.showAdd = false; save(); renderHeader(); renderTabs(); renderBar(); renderAdd(); renderMain();
+  } else if (e.target.id === 'snipForm') {
+    var title = val('sn-title').trim(), body = val('sn-body');
+    if (!title || !body.trim()) { toast('名前と本文を入力してください'); return; }
+    if (U.snipEditId) { S.snippets.forEach(function (s) { if (s.id === U.snipEditId) { s.title = title; s.body = body; } }); }
+    else S.snippets.push({ id: uid(), title: title, body: body });
+    U.snipEditId = null; save(); renderMain(); renderDetail();
+  }
+});
+
+/* 入力中は再描画せず保存だけ行う(カーソルが外れないように) */
+document.addEventListener('input', function (e) {
+  var id = e.target.id, sel = byId(U.selId);
+  if (id === 'f-search') { U.q = e.target.value; renderMain(); }
+  else if (id === 's-rename') { curShow().name = e.target.value; save(); renderHeader(); renderTabs(); }
+  else if (sel && id === 'd-title') patch(sel.id, { title: e.target.value });
+  else if (sel && id === 'd-note') patch(sel.id, { note: e.target.value });
+  else if (sel && id === 'd-date') patch(sel.id, { date: e.target.value });
+  else if (sel && id === 'd-script') patch(sel.id, { script: e.target.value });
+  else if (sel && id === 'd-guest') patch(sel.id, { guestName: e.target.value });
+});
+document.addEventListener('change', function (e) {
+  if (/^d-/.test(e.target.id)) { renderHeader(); renderMain(); }
+});
+
+/* ドラッグ&ドロップ */
+document.addEventListener('dragstart', function (e) {
+  var c = e.target.closest && e.target.closest('.card'); if (!c) return;
+  dragId = Number(c.getAttribute('data-id'));
+  try { e.dataTransfer.setData('text/plain', String(dragId)); e.dataTransfer.effectAllowed = 'move'; } catch (er) {}
+});
+document.addEventListener('dragover', function (e) {
+  var col = e.target.closest && e.target.closest('.col'); if (!col || dragId == null) return;
+  e.preventDefault();
+  Array.prototype.forEach.call(document.querySelectorAll('.col.over'), function (c) { if (c !== col) c.classList.remove('over'); });
+  col.classList.add('over');
+});
+document.addEventListener('drop', function (e) {
+  var col = e.target.closest && e.target.closest('.col'); if (!col || dragId == null) return;
+  e.preventDefault();
+  patch(dragId, { stage: Number(col.getAttribute('data-stage')) }); dragId = null;
+  renderHeader(); renderMain();
+});
+document.addEventListener('dragend', function () { dragId = null; Array.prototype.forEach.call(document.querySelectorAll('.col.over'), function (c) { c.classList.remove('over'); }); });
+
+/* バックアップの読み込み */
+$('importFile').addEventListener('change', function (e) {
+  var f = e.target.files && e.target.files[0]; if (!f) return;
+  var r = new FileReader();
+  r.onload = function () {
+    try {
+      var d = JSON.parse(r.result);
+      if (!d || !Array.isArray(d.items) || !Array.isArray(d.shows) || !d.shows.length) throw new Error('bad');
+      localStorage.setItem(KEY, JSON.stringify(d)); S = load(); U.selId = null; U.snipEditId = null; renderAll(); toast('読み込みました');
+    } catch (er) { toast('読み込めませんでした。書き出したファイルを選んでください'); }
+    e.target.value = '';
+  };
+  r.readAsText(f);
+});
+
+renderAll();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+# Podcast企画ボード(単体版)
+
+Podcastの企画を管理するツールです。サーバー不要で、`index.html` をブラウザで開くだけで使えます。
+
+## 使い方
+- `index.html` をダブルクリックして開きます。
+- データはブラウザに自動保存されます。「番組を管理」→「データを書き出す / 読み込む」でバックアップできます。
+
+## アプリとしてインストール(スタート画面にピン止め)
+ブラウザの「アプリとしてインストール」は、`https://` または `http://localhost` で開いたときだけ使えます。
+ファイルを直接開いた場合(`file://`)は、インストールメニューが出ません。
+
+ローカルで試す場合:
+
+```
+cd podcast-planner
+python3 -m http.server 8080
+```
+
+ブラウザで http://localhost:8080/ を開き、アドレスバーのインストールボタン
+(Chrome / Edge)、または共有メニューの「ホーム画面に追加」(Safari)を使います。
+アイコンは `manifest.webmanifest` の設定(マイクのアイコン)が使われます。
+
+## ファイル
+- `index.html` … 本体
+- `manifest.webmanifest` … アプリ名・アイコンなどの設定
+- `icon.svg`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` … アイコン
+- `wave.jpg` … 見出しの背景画像
