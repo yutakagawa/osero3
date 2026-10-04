@@ -1,0 +1,8 @@
+{
+  "id": "sample-book",
+  "title": "仮タイトル",
+  "author": "著者名",
+  "language": "ja",
+  "vertical": false,
+  "description": "商品説明文(KDPの説明欄と共通で使う)"
+}
