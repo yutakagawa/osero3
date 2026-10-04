@@ -61,6 +61,9 @@ def build(book_dir: Path):
     uid = meta.get("identifier") or f"urn:uuid:{uuid.uuid4()}"
     vertical = meta.get("vertical", False)
     chapters = load_chapters(book_dir)
+    remaining = sum(h.count("【要入力】") + h.count("要確認") for _, _, h in chapters)
+    if remaining:
+        print(f"警告: 未記入の枠・要確認が {remaining} 箇所残っています(公開前に解消してください)")
 
     css = CSS
     if vertical:  # 縦書き(右開き)
